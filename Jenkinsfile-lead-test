@@ -41,7 +41,17 @@ pipeline {
             }
         
     
-       
+        stage('cloning ') {
+                 
+                steps {
+                    sh '''
+                    sudo rm -rf $WORKSPACE/* 
+                    git clone --branch $branch https://github.com/devopseasylearning/SESSION-01-DEVELOPMENT.git
+                    cd $WORKSPACE/SESSION-01-DEVELOPMENT
+                    '''
+                }
+            }
+    
     
     
             stage('Maven clean validate ') {
@@ -97,7 +107,6 @@ pipeline {
                 steps {
                     sh '''
     
-    cd  ~/home/ansible/home/ansible/workspace/SESSION01/PIPELINE-02/DEVELOPMENT/Branch-deployment-test@2
     rm -rf Dockerfile || true 
     cat <<EOF > Dockerfile
     FROM tomcat:8.0-alpine
