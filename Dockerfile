@@ -1,2 +1,4 @@
-FROM tomcat:8.0-alpine
-COPY /home/ansible/webapp.war  /usr/local/tomcat/webapps
+
+FROM ubuntu
+RUN apt update
+RUN touch kelly
