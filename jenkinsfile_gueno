@@ -1,48 +1,57 @@
 pipeline {
     agent any
 
+    environment {
+		DOCKERHUB_CREDENTIALS=credentials('Dockerhub')
+	}
+
+    options { buildDiscarder(logRotator(artifactDaysToKeepStr: '',
+     artifactNumToKeepStr: '', daysToKeepStr: '3', numToKeepStr: '5'))
+      disableConcurrentBuilds() }
+      
+      
     stages {
+     
+     
 
 
-        stage('execute') {
+     stage('Build images') {
             steps {
-                echo 'Hello World'
+                sh '''
+                docker build -t gueno:001 .
+                
+                '''
             }
-
-
         }
 
-        stage('test') {
-            steps {
-                echo 'Hello World'
-            }
-       
 
+     stage('Tag image ') {
+            steps {
+               sh '''
+              docker tag gueno:001  devopseasylearning2021/gueno:001 
+                '''
+            }
         }
 
-       stage('build') {
+
+
+      stage('Docker Login') {
+
+			steps {
+				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+			}
+		}
+
+           
+            
+
+     stage('Docker push ') {
             steps {
-                echo 'Hello World'
+               sh '''
+              docker push devopseasylearning2021/gueno:001 
+                '''
             }
-       
-
         }
-
-        stage('analyse ') {
-            steps {
-                echo 'Hello World'
-            }
-       
-
-        }
-
- 
-
- 
-
-
-
-
 
 
 
@@ -52,12 +61,39 @@ pipeline {
 
 
 
+   post {
+   
+   success {
+      slackSend (channel: '#development-alerts', color: 'good', message: "SUCCESSFUL:  Branch name  <<${env.BRANCH_NAME}>>  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
 
+ 
+    unstable {
+      slackSend (channel: '#development-alerts', color: 'warning', message: "UNSTABLE:  Branch name  <<${env.BRANCH_NAME}>>  Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
 
-
-
+    failure {
+      slackSend (channel: '#development-alerts', color: '#FF0000', message: "FAILURE:  Branch name  <<${env.BRANCH_NAME}>> Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+   
+    cleanup {
+      deleteDir()
+    }
+}
 
 
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
